@@ -1,62 +1,72 @@
 import "./style.css";
 import * as d3 from "d3";
 
-import { barChart } from "./bar-chart";
+import { lineChart } from "./line_chart";
 import { Int32, Table, Utf8 } from "apache-arrow";
 import { db } from "./duckdb";
-import parquet from "./weather.parquet?url";
+import parquet from "./air_qual.parquet?url";
 
 const app = document.querySelector("#app")!;
 
 // Create the chart. The specific code here makes some assumptions that may not hold for you.
-const chart = barChart();
+const chart = lineChart();
 
-async function update(location: string) {
+async function update(City: string) {
   // Query DuckDB for the data we want to visualize.
-  const data: Table<{ weather: Utf8; cnt: Int32 }> = await conn.query(`
-  SELECT weather, count(*)::INT as cnt
-  FROM weather.parquet
-  WHERE location = '${location}'
-  GROUP BY weather
-  ORDER BY cnt DESC`);
+  const data: Table<{ AQI: Int32; 
+                      date: Utf8; 
+                      HI: Int32; 
+                      LO: Int32;
+                      day: Utf8;
+                      aqi: Int32 }> = await conn.query(`
+  SELECT AVG("US AQI") as AQI,
+  quantile_cont("US AQI", 0.8) as HI,
+  quantile_cont("US AQI", 0.1) as LO,
+  strftime(date_trunc('month', "Timestamp(UTC)")+15, '%Y-%m') as date
+  FROM air_qual.parquet
+  WHERE City = '${City}'
+  GROUP BY date
+  ORDER BY date`);
 
   // Get the X and Y columns for the chart. Instead of using Parquet, DuckDB, and Arrow, we could also load data from CSV or JSON directly.
-  const X = data.getChild("cnt")!.toArray();
-  const Y = data
-    .getChild("weather")!
+  const X = data
+    .getChild("date")!
     .toJSON()
     .map((d) => `${d}`);
-
-  chart.update(X, Y);
+  const Y = data.getChild("AQI")!.toArray();
+  const Y_h = data.getChild("HI")!.toArray();
+  const Y_l = data.getChild("LO")!.toArray();
+  chart.update(X, Y, Y_l, Y_h);
 }
 
 // Load a Parquet file and register it with DuckDB. We could request the data from a URL instead.
 const res = await fetch(parquet);
 await db.registerFileBuffer(
-  "weather.parquet",
+  "air_qual.parquet",
   new Uint8Array(await res.arrayBuffer())
 );
 
 // Query DuckDB for the locations.
 const conn = await db.connect();
 
-const locations: Table<{ location: Utf8 }> = await conn.query(`
-SELECT DISTINCT location
-FROM weather.parquet`);
+const locations: Table<{ city: Utf8 ; count : Int32 }> = await conn.query(`
+  SELECT DISTINCT City, COUNT(City) as counts
+  FROM air_qual.parquet
+  GROUP by City`);
 
 // Create a select element for the locations.
 const select = d3.select(app).append("select");
 for (const location of locations) {
-  select.append("option").text(location.location);
+  select.append("option").text(location.City)// + " (" + location.counts + ")")
 }
 
 select.on("change", () => {
   const location = select.property("value");
-  update(location);
+  update(location.split(" ")[0]);
 });
 
 // Update the chart with the first location.
-update("Seattle");
+update("Avalon");
 
 // Add the chart to the DOM.
 app.appendChild(chart.element);
