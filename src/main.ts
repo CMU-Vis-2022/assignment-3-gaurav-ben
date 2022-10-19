@@ -26,16 +26,14 @@ async function update(City: string) {
   GROUP BY date
   ORDER BY date`);
 
-  const raw: Table<{
-    day: Utf8;
-    daily_aqi: Int32 
-  }> = await conn.query(`
+  const raw: Table<{  day: Utf8;
+                      daily_aqi: Int32 }> = await conn.query(`
     SELECT "US AQI" as raw_aqi,
     strftime("Timestamp(UTC)", '%Y-%m-%d') as raw_day
     FROM air_qual.parquet
-    WHERE City = '${City}'
-    ORDER BY raw_day`)
+    WHERE City = '${City}'`)
   console.log(raw)
+
   // Get the X and Y columns for the chart. Instead of using Parquet, DuckDB, and Arrow, we could also load data from CSV or JSON directly.
   const X = data
     .getChild("date")!
@@ -49,7 +47,8 @@ async function update(City: string) {
     .toJSON()
     .map((d) => `${d}`);
   const raw_aqi = raw.getChild("raw_aqi")!.toArray();
-  chart.update(X, Y, Y_l, Y_h, raw_day, raw_aqi);
+  chart.update(X, Y, Y_l, Y_h);
+  chart.update_dots(raw_day, raw_aqi);
 }
 
 // Load a Parquet file and register it with DuckDB. We could request the data from a URL instead.
