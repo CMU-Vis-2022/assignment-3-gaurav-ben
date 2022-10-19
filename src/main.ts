@@ -12,10 +12,9 @@ const chart = lineChart();
 
 async function update(City: string) {
   // Query DuckDB for the data we want to visualize.
-  const data: Table<{ AQI: Int32; 
-                      date: Utf8; 
-                      HI: Int32; 
-                      LO: Int32 }> = await conn.query(`
+  let data: Table<{ AQI: Int32; date: Utf8; HI: Int32; LO: Int32 }>;
+  if (City != "All") {
+    data = await conn.query(`
     SELECT AVG("US AQI") as AQI,
     quantile_cont("US AQI", 0.9) as HI,
     quantile_cont("US AQI", 0.1) as LO,
@@ -24,14 +23,30 @@ async function update(City: string) {
     WHERE City = '${City}'
     GROUP BY date
     ORDER BY date`);
+  } else {
+    data = await conn.query(`
+    SELECT AVG("US AQI") as AQI,
+    quantile_cont("US AQI", 0.9) as HI,
+    quantile_cont("US AQI", 0.1) as LO,
+    strftime(date_trunc('month', "Timestamp(UTC)")+15, '%Y-%m') as date
+    FROM air_qual.parquet
+    GROUP BY date
+    ORDER BY date`);
+  }
 
-  const raw: Table<{  day: Utf8;
-                      daily_aqi: Int32 }> = await conn.query(`
+  let raw: Table<{ day: Utf8; daily_aqi: Int32 }>;
+  if (City != "All") {
+    raw = await conn.query(`
     SELECT "US AQI" as raw_aqi,
     strftime("Timestamp(UTC)", '%Y-%m-%d') as raw_day
     FROM air_qual.parquet
-    WHERE City = '${City}'`)
-  console.log(raw)
+    WHERE City = '${City}'`);
+  } else {
+    raw = await conn.query(`
+    SELECT "US AQI" as raw_aqi,
+    strftime("Timestamp(UTC)", '%Y-%m-%d') as raw_day
+    FROM air_qual.parquet`);
+  }
 
   // Get the X and Y columns for the chart. Instead of using Parquet, DuckDB, and Arrow, we could also load data from CSV or JSON directly.
   const X = data
@@ -60,15 +75,16 @@ await db.registerFileBuffer(
 // Query DuckDB for the locations.
 const conn = await db.connect();
 
-const locations: Table<{ city: Utf8 ; count : Int32 }> = await conn.query(`
+const locations: Table<{ city: Utf8; count: Int32 }> = await conn.query(`
   SELECT DISTINCT City, COUNT(City) as counts
   FROM air_qual.parquet
   GROUP by City`);
 
 // Create a select element for the locations.
 const select = d3.select(app).append("select");
+select.append("option").text("All (10385)");
 for (const location of locations) {
-  select.append("option").text(location.City + " (" + location.counts + ")")
+  select.append("option").text(location.City + " (" + location.counts + ")");
 }
 
 select.on("change", () => {
@@ -77,7 +93,7 @@ select.on("change", () => {
 });
 
 // Update the chart with the first location.
-update("Avalon");
+update("All");
 
 // Add the chart to the DOM.
 app.appendChild(chart.element);
