@@ -8,7 +8,6 @@ import parquet from "./air_qual.parquet?url";
 
 const app = document.querySelector("#app")!;
 
-// Create the chart. The specific code here makes some assumptions that may not hold for you.
 const chart = lineChart();
 
 async function update(City: string) {
@@ -17,14 +16,14 @@ async function update(City: string) {
                       date: Utf8; 
                       HI: Int32; 
                       LO: Int32 }> = await conn.query(`
-  SELECT AVG("US AQI") as AQI,
-  quantile_cont("US AQI", 0.9) as HI,
-  quantile_cont("US AQI", 0.1) as LO,
-  strftime(date_trunc('month', "Timestamp(UTC)")+15, '%Y-%m') as date
-  FROM air_qual.parquet
-  WHERE City = '${City}'
-  GROUP BY date
-  ORDER BY date`);
+    SELECT AVG("US AQI") as AQI,
+    quantile_cont("US AQI", 0.9) as HI,
+    quantile_cont("US AQI", 0.1) as LO,
+    strftime(date_trunc('month', "Timestamp(UTC)")+15, '%Y-%m') as date
+    FROM air_qual.parquet
+    WHERE City = '${City}'
+    GROUP BY date
+    ORDER BY date`);
 
   const raw: Table<{  day: Utf8;
                       daily_aqi: Int32 }> = await conn.query(`
@@ -47,7 +46,7 @@ async function update(City: string) {
     .toJSON()
     .map((d) => `${d}`);
   const raw_aqi = raw.getChild("raw_aqi")!.toArray();
-  chart.update(X, Y, Y_l, Y_h);
+  chart.update(X, Y, Y_l, Y_h, raw_day.length);
   chart.update_dots(raw_day, raw_aqi);
 }
 

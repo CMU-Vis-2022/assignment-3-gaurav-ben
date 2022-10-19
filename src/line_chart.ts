@@ -1,8 +1,8 @@
 import * as d3 from "d3";
 
 export function lineChart() {
-    var data = [];
-    var raw_data = [];
+    var data:any = [];
+    var raw_data:any = [];
     const margin = { top: 30, right: 0, bottom: 30, left: 50 };
     const width = document.body.clientWidth;
     const height = 500;
@@ -185,8 +185,9 @@ export function lineChart() {
     function update(X: string[],
         Y: Int32Array,
         Y_l: Int32Array | Uint8Array,
-        Y_h: Int32Array | Uint8Array) {
-
+        Y_h: Int32Array | Uint8Array,
+        counts: any) {
+        document.getElementById("counts").innerHTML = "Count of records: " + counts;
         // Creating new X and Y domains
         xScale.domain([new Date(X[0]), new Date(X[X.length - 1])]);
         yScale.domain([0, 160]);
@@ -209,10 +210,10 @@ export function lineChart() {
             var i = bisect(data, x0, 1);
             var selectedData = data[i];
             var selectedDate = new Date(selectedData.date)
-            selectedDate.setDate(selectedDate.getDate())
+            selectedDate.setDate(selectedDate.getDate() - 16)
             var modifiedDate = xScale(selectedDate) + 5;
             if (modifiedDate + 150 > width) {
-                modifiedDate -= 170;
+                modifiedDate -= 160;
             }
             var m_date = X[i];
             m_line
