@@ -34,7 +34,7 @@ async function update(City: string) {
     ORDER BY date`);
   }
 
-  let raw: Table<{ day: Utf8; daily_aqi: Int32 }>;
+  let raw: Table<{ raw_day: Utf8; raw_aqi: Int32 }>;
   if (City != "All") {
     raw = await conn.query(`
     SELECT "US AQI" as raw_aqi,

@@ -1,7 +1,5 @@
 import * as d3 from "d3";
 import * as d3r from "d3-regression";
-import { Int32, Table, Utf8 } from "apache-arrow";
-import { text } from "d3";
 
 export function p2Chart() {
   let data: any = [];
@@ -160,7 +158,7 @@ export function p2Chart() {
   // Toggling scatterplot on and off
   function togglePts() {
     // Update dots set
-    const pts = base_layer.selectAll(".dots").data(raw_data);
+    const pts: any = base_layer.selectAll(".dots").data(raw_data);
 
     // Removing old points
     pts.exit().remove();
@@ -210,7 +208,7 @@ export function p2Chart() {
       });
     }
     // Update dots set
-    const pts = base_layer.selectAll(".dots").data(raw_data);
+    const pts: any = base_layer.selectAll(".dots").data(raw_data);
 
     // Removing old points
     pts.exit().remove();

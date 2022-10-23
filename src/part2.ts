@@ -19,17 +19,17 @@ async function update(field: string) {
   if (col_name == "Precip" || col_name == "Snow") {
     places = 1;
   }
-  const data: Table<{ AQI: Int32; date: Utf8; HI: Int32; LO: Int32 }> =
+  const data: Table<{ aqi: Int32; newX: Utf8; hi: Int32; lo: Int32 }> =
     await conn.query(`
         SELECT ROUND("${col_name}", ${places}) as newX,
-        AVG("US AQI") as aqi,
-        quantile_cont("US AQI", 0.9) as hi,
-        quantile_cont("US AQI", 0.1) as lo,
+        AVG("US AQI") as AQI,
+        quantile_cont("US AQI", 0.9) as HI,
+        quantile_cont("US AQI", 0.1) as LO,
         FROM combined
         WHERE newX >= 0
         GROUP BY newX
         ORDER BY newX`);
-  const raw: Table<{ day: Utf8; daily_aqi: Int32 }> = await conn.query(`
+  const raw: Table<{ raw_x: Utf8; raw_aqi: Int32 }> = await conn.query(`
           SELECT "US AQI" as raw_aqi,
           "${col_name}" as raw_x,
           FROM combined

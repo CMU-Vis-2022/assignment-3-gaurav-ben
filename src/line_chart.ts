@@ -140,7 +140,7 @@ export function lineChart() {
   // Toggling scatterplot on and off
   function togglePts() {
     // Update dots set
-    const pts = base_layer.selectAll(".dots").data(raw_data);
+    const pts: any = base_layer.selectAll(".dots").data(raw_data);
 
     // Removing old points
     pts.exit().remove();
@@ -177,7 +177,7 @@ export function lineChart() {
       });
     }
     // Update dots set
-    const pts = base_layer.selectAll(".dots").data(raw_data);
+    const pts: any = base_layer.selectAll(".dots").data(raw_data);
 
     // Removing old points
     pts.exit().remove();
