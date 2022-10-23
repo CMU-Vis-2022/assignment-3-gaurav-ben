@@ -12,14 +12,15 @@ const app = document.querySelector("#part2");
 const chart = p2Chart();
 
 async function update(field: string) {
-    const col_name = param_map[field];
-    const str_spl = field.split(" ");
-    const unit = str_spl[str_spl.length - 1];
-    var places = 0;
-    if (col_name == "Precip" || col_name == "Snow") {
-        places = 1;
-    }
-    let data: Table<{ AQI: Int32; date: Utf8; HI: Int32; LO: Int32 }> = await conn.query(`
+  const col_name = param_map[field];
+  const str_spl = field.split(" ");
+  const unit = str_spl[str_spl.length - 1];
+  let places = 0;
+  if (col_name == "Precip" || col_name == "Snow") {
+    places = 1;
+  }
+  const data: Table<{ AQI: Int32; date: Utf8; HI: Int32; LO: Int32 }> =
+    await conn.query(`
         SELECT ROUND("${col_name}", ${places}) as newX,
         AVG("US AQI") as aqi,
         quantile_cont("US AQI", 0.9) as hi,
@@ -28,21 +29,20 @@ async function update(field: string) {
         WHERE newX >= 0
         GROUP BY newX
         ORDER BY newX`);
-    let raw: Table<{ day: Utf8; daily_aqi: Int32 }>;
-          raw = await conn.query(`
+  const raw: Table<{ day: Utf8; daily_aqi: Int32 }> = await conn.query(`
           SELECT "US AQI" as raw_aqi,
           "${col_name}" as raw_x,
           FROM combined
           WHERE raw_x >= 0`);
-    const aqi = data.getChild("aqi")!.toArray();
-    const newX = data.getChild("newX")!.toArray();
-    const aqi_10 = data.getChild("hi")!.toArray();
-    const aqi_90 = data.getChild("lo")!.toArray();
-    chart.update(newX, aqi, aqi_10, aqi_90, unit);
+  const aqi = data.getChild("aqi")!.toArray();
+  const newX = data.getChild("newX")!.toArray();
+  const aqi_10 = data.getChild("hi")!.toArray();
+  const aqi_90 = data.getChild("lo")!.toArray();
+  chart.update(newX, aqi, aqi_10, aqi_90, unit);
 
-    const raw_x = raw.getChild("raw_x")!.toArray();
-    const raw_aqi = raw.getChild("raw_aqi")!.toArray();
-    chart.update_dots(raw_x, raw_aqi);
+  const raw_x = raw.getChild("raw_x")!.toArray();
+  const raw_aqi = raw.getChild("raw_aqi")!.toArray();
+  chart.update_dots(raw_x, raw_aqi);
 }
 
 // Load a Parquet file and register it with DuckDB. We could request the data from a URL instead.
@@ -50,13 +50,13 @@ const res_we = await fetch(weather);
 const res_aq = await fetch(parquet);
 
 await db.registerFileBuffer(
-    "weather.csv",
-    new Uint8Array(await res_we.arrayBuffer())
+  "weather.csv",
+  new Uint8Array(await res_we.arrayBuffer())
 );
 
 await db.registerFileBuffer(
-    "air_qual.parquet",
-    new Uint8Array(await res_aq.arrayBuffer())
+  "air_qual.parquet",
+  new Uint8Array(await res_aq.arrayBuffer())
 );
 
 // Query DuckDB for the data
@@ -69,24 +69,28 @@ await conn.query(`
 
 // Create select element for weather parameters
 const select = d3.select(app).append("select");
-const params = ["Average Daily Wind Speed (MPH)",
-                "Average Daily Precipitation (in)",
-                "Average Daily Snowfall (in)",
-                "Average Snow Depth (in)",
-                "Average Daily Temperature (F)", 
-                "Daily High Temperatures (F)", 
-                "Daily Low Temperatures (F)", 
-                "Fastest Wind Direction (heading)",
-                "Fastest Wind Speed (MPH)"];
-const param_map = {"Average Daily Wind Speed (MPH)": "Wind",
-                "Average Daily Precipitation (in)": "Precip",
-                "Average Daily Snowfall (in)": "Snow",
-                "Average Snow Depth (in)": "SnowDepth",
-                "Average Daily Temperature (F)": "Temp", 
-                "Daily High Temperatures (F)": "TempHigh", 
-                "Daily Low Temperatures (F)": "TempLow", 
-                "Fastest Wind Direction (heading)": "FastestWindDirection",
-                "Fastest Wind Speed (MPH)": "FastestWindSpeed"};
+const params = [
+  "Average Daily Wind Speed (MPH)",
+  "Average Daily Precipitation (in)",
+  "Average Daily Snowfall (in)",
+  "Average Snow Depth (in)",
+  "Average Daily Temperature (F)",
+  "Daily High Temperatures (F)",
+  "Daily Low Temperatures (F)",
+  "Fastest Wind Direction (heading)",
+  "Fastest Wind Speed (MPH)",
+];
+const param_map = {
+  "Average Daily Wind Speed (MPH)": "Wind",
+  "Average Daily Precipitation (in)": "Precip",
+  "Average Daily Snowfall (in)": "Snow",
+  "Average Snow Depth (in)": "SnowDepth",
+  "Average Daily Temperature (F)": "Temp",
+  "Daily High Temperatures (F)": "TempHigh",
+  "Daily Low Temperatures (F)": "TempLow",
+  "Fastest Wind Direction (heading)": "FastestWindDirection",
+  "Fastest Wind Speed (MPH)": "FastestWindSpeed",
+};
 for (const param of params) {
   select.append("option").text(param);
 }
