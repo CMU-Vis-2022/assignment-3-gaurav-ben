@@ -86,7 +86,7 @@ export function p2Chart() {
     .append("g")
     .attr("class", "xaxis")
     .attr("transform", `translate(0,${height - margin.bottom})`);
-    
+
   // Add the y axis
   base_layer
     .append("g")
