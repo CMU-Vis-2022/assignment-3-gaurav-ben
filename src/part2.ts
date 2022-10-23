@@ -2,7 +2,7 @@ import "./style.css";
 import * as d3 from "d3";
 
 import { p2Chart } from "./part2Chart";
-import { Int32, Table, Utf8 } from "apache-arrow";
+import { Int32, Table } from "apache-arrow";
 import { db } from "./duckdb";
 
 import weather from "./weather.csv?url";
