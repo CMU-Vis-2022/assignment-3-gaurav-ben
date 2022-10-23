@@ -284,7 +284,7 @@ export function lineChart() {
         return yScale(d.aqi_hi);
       });
 
-    area.merge(line).attr("d", my_area(data));
+    area.merge(area).attr("d", my_area(data));
 
     // Clear the axis so that when we add the grid, we don't get duplicate lines
     base_layer.select(".xaxis").selectAll("*").remove();
