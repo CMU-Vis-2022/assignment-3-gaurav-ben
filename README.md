@@ -3,6 +3,7 @@
 By Ben and Gaurav
 
 ## See the visualization:
+
 The visualization can be found [here](https://cmu-vis-2022.github.io/assignment-3-gaurav-ben/)
 
 The regression algorithm is a bit slow so please be patient with the second visualization.
