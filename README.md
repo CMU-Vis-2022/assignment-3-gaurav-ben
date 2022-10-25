@@ -1,29 +1,11 @@
-[![Open in Visual Studio Code](https://classroom.github.com/assets/open-in-vscode-c66648af7eb3fe8bc4f294546bfd86ef473780cde1dea487d3c4ff354943c9ae.svg)](https://classroom.github.com/online_ide?assignment_repo_id=8843115&assignment_repo_type=AssignmentRepo)
+# Data Visualization Project 2
 
-# D3-App-Template
+By Ben and Gaurav
 
-A template for an interactive web application with D3.
+## See the visualization:
+The visualization can be found [here](https://cmu-vis-2022.github.io/assignment-3-gaurav-ben/)
 
-## Launch the app
-
-Install [node](https://nodejs.org/en/).
-
-```bash
-npm install
-npm run dev
-```
-
-This launches the app in developer mode. To run the app in production mode, run `npm run build` or see below.
-
-## Code style
-
-We recomme dusing VSCode for development. You can run `npm run lint` to check for linting errors.
-Note that these tests automatically run when you comit your code to GitHub. See `test.yml` for details.
-You can fix a lot of issues autoamtically with `npm run format`.
-
-## Deployment
-
-When you push to GitHub, the app automatically deploys to GitHub Pages. As an example, this template repository is deployed at [domoritz.github.io/D3-App-Template](https://domoritz.github.io/D3-App-Template/). See `deploy.yml` for details. Make sure to update the `base` property in `vite.config.ts` to match your repo name.
+The regression algorithm is a bit slow so please be patient with the second visualization.
 
 ## Notes
 
